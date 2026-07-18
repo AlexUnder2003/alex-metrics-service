@@ -48,3 +48,5 @@ func (m MetricsInput) Validate() error {
 	}
 	return errors.New("invalid metric type")
 }
+
+
