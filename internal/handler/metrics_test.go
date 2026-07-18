@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
+	"github.com/Alexunder2003/alex-metrics-service/internal/service"
 	"github.com/Alexunder2003/alex-metrics-service/internal/storage"
 )
 
@@ -50,7 +51,7 @@ func TestHandler_Update(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			storage := storage.NewMemStorage[model.Metrics]()
-			h := New(storage)
+			h := New(service.NewMetricsService(storage))
 
 			r := httptest.NewRequest(http.MethodPost, "/update", nil)
 			r.SetPathValue("type", test.input.MType)
@@ -93,7 +94,7 @@ func TestHandler_Get(t *testing.T) {
 			storage := storage.NewMemStorage[model.Metrics]()
 			assert.NoError(t, storage.Update(test.fixture.ID, test.fixture))
 
-			h := New(storage)
+			h := New(service.NewMetricsService(storage))
 
 			r := httptest.NewRequest(http.MethodGet, "/value", nil)
 			r.SetPathValue("name", "test")

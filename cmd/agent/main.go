@@ -1,7 +1,7 @@
 package main
 
 import (
-	app "github.com/Alexunder2003/alex-metrics-service/internal/agent"
+	"github.com/Alexunder2003/alex-metrics-service/internal/agent"
 	"github.com/Alexunder2003/alex-metrics-service/internal/config"
 )
 
@@ -10,6 +10,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	agent := app.NewAgent(&cfg)
+	agent := agent.NewAgent(&cfg)
 	agent.Run()
 }

@@ -6,9 +6,9 @@ import (
 	"github.com/Alexunder2003/alex-metrics-service/internal/config"
 	"github.com/Alexunder2003/alex-metrics-service/internal/handler"
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
+	"github.com/Alexunder2003/alex-metrics-service/internal/service"
 	"github.com/Alexunder2003/alex-metrics-service/internal/storage"
 )
-
 type App struct {
 	cfg config.Config
 	mux *http.ServeMux
@@ -16,7 +16,7 @@ type App struct {
 
 func NewApp(cfg config.Config) *App {
 	storage := storage.NewMemStorage[model.Metrics]()
-	handler := handler.New(storage)
+	handler := handler.New(service.NewMetricsService(storage))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /update/{type}/{name}/{value}", handler.Update)
