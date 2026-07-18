@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
@@ -20,6 +21,7 @@ func New(storage *storage.MemStorage[model.Metrics]) *Handler {
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	log.Println("Update request received")
 	input := model.MetricsInput{
 		Name:     r.PathValue("name"),
 		MType:    r.PathValue("type"),
