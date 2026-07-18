@@ -7,14 +7,16 @@ import (
 
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
 	"github.com/Alexunder2003/alex-metrics-service/internal/repository"
+	"github.com/Alexunder2003/alex-metrics-service/internal/storage"
 )
 
 type MetricsService struct {
-	storage repository.MetricsStorage
+	repository *repository.MetricsRepository
 }
 
-func NewMetricsService(storage repository.MetricsStorage) *MetricsService {
-	return &MetricsService{storage: storage}
+func NewMetricsService(storage *storage.MemStorage[model.Metrics]) *MetricsService {
+	repository := repository.NewMetricsRepository(storage)
+	return &MetricsService{repository: repository}
 }
 
 func (s *MetricsService) Update(input model.MetricsInput) error {
@@ -34,8 +36,8 @@ func (s *MetricsService) Update(input model.MetricsInput) error {
 			return fmt.Errorf("invalid counter value: %w", err)
 		}
 
-		key := model.Counter + ":" + input.Name
-		if current, err := s.storage.Get(key); err == nil {
+		key := input.Name
+		if current, err := s.repository.Get(key); err == nil {
 			delta += *current.Delta
 		}
 		metric.Delta = &delta
@@ -51,5 +53,14 @@ func (s *MetricsService) Update(input model.MetricsInput) error {
 		return errors.New("invalid metric type")
 	}
 
-	return s.storage.Update(metric)
+	return s.repository.Update(metric)
+}
+
+
+func (s *MetricsService) Get(id string) (model.Metrics, error) {
+	metric, err := s.repository.Get(id)
+	if err != nil {
+		return model.Metrics{}, errors.New("metric not found")
+	}
+	return metric, nil
 }
