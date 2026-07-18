@@ -15,8 +15,8 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	repo := repository.NewMemStorage()
-	metricsHandler := handler.New(repo)
+	repo := repository.NewMetricsStorage()
+	metricsHandler := handler.New(*repo)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /update/{type}/{name}/{value}", metricsHandler.Update)

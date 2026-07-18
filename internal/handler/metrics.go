@@ -3,34 +3,32 @@ package handler
 import (
 	"net/http"
 
+	"github.com/Alexunder2003/alex-metrics-service/internal/model"
 	"github.com/Alexunder2003/alex-metrics-service/internal/repository"
-	"github.com/Alexunder2003/alex-metrics-service/internal/service"
+	service "github.com/Alexunder2003/alex-metrics-service/internal/service/metric"
 )
 
 type Handler struct {
-	repository repository.Storage
 	svc *service.MetricsService
 }
 
-func New(repo repository.Storage) *Handler {
-	svc := service.NewMetricsService(repo)
-	return &Handler{repository: repo, svc: svc}
+func New(storage repository.MetricsStorage) *Handler {
+	return &Handler{
+		svc: service.NewMetricsService(storage),
+	}
 }
 
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	mtype := r.PathValue("type")
-	name := r.PathValue("name")
-	value := r.PathValue("value")
 
-	if name == "" || mtype == "" || value == "" {
-		http.Error(w, "type, name and value are required", http.StatusNotFound)
-		return
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	input := model.MetricsInput{
+		Name: r.PathValue("name"),
+		MType: r.PathValue("type"),
+		RawValue: r.PathValue("value"),
 	}
 
-	if err := h.svc.Update(mtype, name, value); err != nil {
+	if err := h.svc.Update(input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 }

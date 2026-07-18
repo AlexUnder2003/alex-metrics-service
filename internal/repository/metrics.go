@@ -1,21 +1,33 @@
 package repository
 
-import "github.com/Alexunder2003/alex-metrics-service/internal/model"
+import (
+	"errors"
 
-type Storage interface {
-	Update(metrics model.Metrics)
-}
+	"github.com/Alexunder2003/alex-metrics-service/internal/model"
+)
 
-type MemStorage struct {
+type MetricsStorage struct {
 	storage map[string]model.Metrics
 }
 
-func NewMemStorage() *MemStorage {
-	return &MemStorage{
+func NewMetricsStorage() *MetricsStorage {
+	return &MetricsStorage{
 		storage: make(map[string]model.Metrics),
 	}
 }
 
-func (m *MemStorage) Update(metrics model.Metrics) {
-	m.storage[metrics.ID] = metrics
+func (s *MetricsStorage) Get(key string) (model.Metrics, error) {
+	metric, ok := s.storage[key]
+	if !ok {
+		return model.Metrics{}, errors.New("metric not found")
+	}
+	return metric, nil
+}
+
+func (s *MetricsStorage) Update(metric model.Metrics) error {
+	key := metric.MType + ":" + metric.ID
+
+	s.storage[key] = metric
+
+	return nil
 }
