@@ -6,18 +6,15 @@ import (
 	"net/http"
 
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
-	service "github.com/Alexunder2003/alex-metrics-service/internal/service/metric"
-	"github.com/Alexunder2003/alex-metrics-service/internal/storage"
+	"github.com/Alexunder2003/alex-metrics-service/internal/service"
 )
 
 type Handler struct {
 	svc *service.MetricsService
 }
 
-func New(storage *storage.MemStorage[model.Metrics]) *Handler {
-	return &Handler{
-		svc: service.NewMetricsService(storage),
-	}
+func New(svc *service.MetricsService) *Handler {
+	return &Handler{svc: svc}
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {

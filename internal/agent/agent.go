@@ -1,8 +1,8 @@
-package app
+package agent
 
 import (
 	"github.com/Alexunder2003/alex-metrics-service/internal/config"
-	service "github.com/Alexunder2003/alex-metrics-service/internal/service/agent"
+	"github.com/Alexunder2003/alex-metrics-service/internal/service"
 )
 
 type Agent struct {
