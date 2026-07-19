@@ -7,6 +7,7 @@ import (
 
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
 	"github.com/Alexunder2003/alex-metrics-service/internal/service"
+	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
@@ -20,9 +21,9 @@ func New(svc *service.MetricsService) *Handler {
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	log.Println("Update request received")
 	input := model.MetricsInput{
-		Name:     r.PathValue("name"),
-		MType:    r.PathValue("type"),
-		RawValue: r.PathValue("value"),
+		Name:     chi.URLParam(r, "name"),
+		MType:    chi.URLParam(r, "type"),
+		RawValue: chi.URLParam(r, "value"),
 	}
 
 	if err := h.svc.Update(input); err != nil {
@@ -33,7 +34,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	name := r.PathValue("name")
+	name := chi.URLParam(r, "name")
 
 	metric, err := h.svc.Get(name)
 	if err != nil {

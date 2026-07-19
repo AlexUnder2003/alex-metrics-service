@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,23 +51,27 @@ func TestHandler_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage := storage.NewMemStorage[model.Metrics]()
-			h := New(service.NewMetricsService(storage))
+			store := storage.NewMemStorage[model.Metrics]()
+			router := NewRouter(Mount{
+				Pattern: "/",
+				Router:  MetricsRouter(New(service.NewMetricsService(store))),
+			})
 
-			r := httptest.NewRequest(http.MethodPost, "/update", nil)
-			r.SetPathValue("type", test.input.MType)
-			r.SetPathValue("name", test.input.Name)
-			r.SetPathValue("value", test.input.RawValue)
-
+			url := fmt.Sprintf(
+				"/update/%s/%s/%s",
+				test.input.MType,
+				test.input.Name,
+				test.input.RawValue,
+			)
+			r := httptest.NewRequest(http.MethodPost, url, nil)
 			w := httptest.NewRecorder()
-			h.Update(w, r)
+			router.ServeHTTP(w, r)
 
 			assert.Equal(t, test.want.statusCode, w.Code)
 			assert.Equal(t, test.want.response, w.Body.String())
 		})
 	}
 }
-
 
 func TestHandler_Get(t *testing.T) {
 	delta := int64(1)
@@ -91,16 +96,17 @@ func TestHandler_Get(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage := storage.NewMemStorage[model.Metrics]()
-			assert.NoError(t, storage.Update(test.fixture.ID, test.fixture))
+			store := storage.NewMemStorage[model.Metrics]()
+			assert.NoError(t, store.Update(test.fixture.ID, test.fixture))
 
-			h := New(service.NewMetricsService(storage))
+			router := NewRouter(Mount{
+				Pattern: "/",
+				Router:  MetricsRouter(New(service.NewMetricsService(store))),
+			})
 
-			r := httptest.NewRequest(http.MethodGet, "/value", nil)
-			r.SetPathValue("name", "test")
-
+			r := httptest.NewRequest(http.MethodGet, "/value/counter/test", nil)
 			w := httptest.NewRecorder()
-			h.Get(w, r)
+			router.ServeHTTP(w, r)
 
 			assert.Equal(t, test.want.statusCode, w.Code)
 			assert.Equal(t, test.want.response, w.Body.String())
