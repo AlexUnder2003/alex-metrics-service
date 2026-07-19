@@ -8,23 +8,25 @@ import (
 	"github.com/Alexunder2003/alex-metrics-service/internal/model"
 	"github.com/Alexunder2003/alex-metrics-service/internal/service"
 	"github.com/Alexunder2003/alex-metrics-service/internal/storage"
+	"github.com/go-chi/chi/v5"
 )
+
 type App struct {
-	cfg config.Config
-	mux *http.ServeMux
+	cfg    config.Config
+	router chi.Router
 }
 
 func NewApp(cfg config.Config) *App {
-	storage := storage.NewMemStorage[model.Metrics]()
-	handler := handler.New(service.NewMetricsService(storage))
+	store := storage.NewMemStorage[model.Metrics]()
+	metricsHandler := handler.New(service.NewMetricsService(store))
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("POST /update/{type}/{name}/{value}", handler.Update)
-	mux.HandleFunc("GET /value/{type}/{name}", handler.Get)
+	r := handler.NewRouter(
+		handler.Mount{Pattern: "/", Router: handler.MetricsRouter(metricsHandler)},
+	)
 
-	return &App{cfg: cfg, mux: mux}
+	return &App{cfg: cfg, router: r}
 }
 
 func (a *App) Run() error {
-	return http.ListenAndServe(a.cfg.Address, a.mux)
+	return http.ListenAndServe(a.cfg.Address, a.router)
 }
